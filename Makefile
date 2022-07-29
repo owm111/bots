@@ -1,4 +1,4 @@
-DIRS=common omp-tasks serial
+DIRS=common omp-tasks serial tbb-tasks
 
 RECURSIVE=all-recursive clean-recursive dist-clean-recursive
 
