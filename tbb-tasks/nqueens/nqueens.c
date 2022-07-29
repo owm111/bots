@@ -326,7 +326,13 @@ void nqueens(int n, int j, char *a, std::atomic<int> *solutions, int depth)
 void nqueens(int n, int j, char *a, int depth)
 #endif
 {
-	bots_debug_with_location_info("entered nqueens()\n");
+#ifndef FORCE_TIED_TASKS
+	bots_debug_with_location_info("entered nqueens(), *solutions = %d\n",
+			solutions->load());
+#else
+	bots_debug_with_location_info("entered nqueens(), mycount = %d\n",
+			mycount);
+#endif
 #ifndef FORCE_TIED_TASKS
 	std::atomic<int> *csols;
 #endif
@@ -339,6 +345,13 @@ void nqueens(int n, int j, char *a, int depth)
 		*solutions = 1;
 #else
 		mycount++;
+#endif
+#ifndef FORCE_TIED_TASKS
+	bots_debug_with_location_info("good solution, count it, *solutions = %d\n",
+			solutions->load());
+#else
+	bots_debug_with_location_info("good solution, count it, mycount = %d\n",
+			mycount);
 #endif
 		return;
 	}
@@ -353,7 +366,11 @@ void nqueens(int n, int j, char *a, int depth)
 	oneapi::tbb::task_group g;
      	/* try each possible position for queen <j> */
 	for (i = 0; i < n; i++) {
-		g.run([&] {
+#ifndef FORCE_TIED_TASKS
+		g.run([=, &csols] {
+#else
+		g.run([=] {
+#endif
 	  		/* allocate a temporary array and copy <a> into it */
 	  		char * b = (char *)alloca(n * sizeof(char));
 	  		memcpy(b, a, j * sizeof(char));
@@ -370,6 +387,13 @@ void nqueens(int n, int j, char *a, int depth)
 	g.wait();
 #ifndef FORCE_TIED_TASKS
 	for ( i = 0; i < n; i++) *solutions += csols[i];
+#endif
+#ifndef FORCE_TIED_TASKS
+	bots_debug_with_location_info("leaving nqueens, *solutions = %d\n",
+			solutions->load());
+#else
+	bots_debug_with_location_info("leaving nqueens, mycount = %d\n",
+			mycount);
 #endif
 }
 
