@@ -34,7 +34,6 @@
 #include <memory.h>
 #include <alloca.h>
 #include "bots.h"
-#include "app-desc.h"
 
 
 /* Checking information */
@@ -231,7 +230,7 @@ public:
 static oneapi::tbb::task_arena *arenaptr;
 static oneapi::tbb::task_scheduler_observer *observerptr;
 
-void
+extern "C" void
 init_queens()
 {
 	int default_conc = get_nprocs();
@@ -270,7 +269,7 @@ init_queens()
 	}
 }
 
-void
+extern "C" void
 cleanup_queens()
 {
 	bots_debug("Calling cleanup code\n");
@@ -278,7 +277,7 @@ cleanup_queens()
 	delete arenaptr;
 }
 
-void find_queens (int size)
+extern "C" void find_queens (int size)
 {
 	total_count=0;
 
@@ -295,7 +294,7 @@ void find_queens (int size)
 }
 
 
-int verify_queens (int size)
+extern "C" int verify_queens (int size)
 {
 	if ( size > MAX_SOLUTIONS ) return BOTS_RESULT_NA;
 	if ( total_count == solutions[size-1]) return BOTS_RESULT_SUCCESSFUL;

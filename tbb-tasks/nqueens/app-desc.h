@@ -19,7 +19,6 @@
 /**********************************************************************************************/
 
 #include "tbb-tasks-app.h"
-#include <atomic>
 
 #define BOTS_APP_NAME "N Queens"
 #define BOTS_APP_PARAMETERS_DESC "N=%d"
@@ -30,10 +29,6 @@
 #define BOTS_APP_DESC_ARG_SIZE "Board size"
 
 int ok(int n, char *a);
-
-void nqueens(int n, int j, char *a, std::atomic<int> *solutions, int depth);
-
-void nqueens_ser (int n, int j, char *a, std::atomic<int> *solutions);
 
 void init_queens();
 int verify_queens(int);
