@@ -128,6 +128,7 @@ void nqueens_ser (int n, int j, char *a)
 }
 
 #if defined(IF_CUTOFF)
+#error "WIP"
 
 #ifndef FORCE_TIED_TASKS
 void nqueens(int n, int j, char *a, std::atomic<int> *solutions, int depth)
@@ -290,7 +291,11 @@ void nqueens(int n, int j, char *a, int depth)
      	/* try each possible position for queen <j> */
 	for (i = 0; i < n; i++) {
 		if ( depth < bots_cutoff_value ) {
-			g.run([&] {
+#ifndef FORCE_TIED_TASKS
+			g.run([=, &csols] {
+#else
+			g.run([=] {
+#endif
 	  			/* allocate a temporary array and copy <a> into it */
 	  			char * b = (char *)alloca(n * sizeof(char));
 	  			memcpy(b, a, j * sizeof(char));
