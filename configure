@@ -7,6 +7,9 @@ show_help ()
    echo "$0 options:"
    echo "--compiler name    Configures BOTS for given compiler"
    echo "                   Supported compilers: GCC, Clang, ICC, SunStudio, PGI, XLC and  Mercurium"
+   echo "--compilerxx name  Configures BOTS for given C++ compiler"
+   echo "                   Supported compilers: G++, Clang++, and DPC++"
+   echo "--add-L path       Pass <path> to linker as -L<path>"
    echo "--debug            Enables debug flags"
    echo "--warnings         Force warnings to be reported as errors"
    echo "--help             Prints this help"
@@ -20,6 +23,10 @@ while [ "$#" -gt 0  ]; do
          ;;
       --compiler) shift; COMPILER=$1
          ;;
+      --compilerxx) shift; COMPILERXX=$1
+         ;;
+      --add-L) shift; L_FLAGS="$L_FLAGS -L$1"
+	 ;;
       --help) 
          show_help
          exit
@@ -38,6 +45,9 @@ XLC=`xlc -qversion &> /dev/null && echo "yes"`
 PGI=`pgcc &> /dev/null && echo "yes"`
 SUN=`cc -xopenmp &> /dev/null && echo "yes"`
 CLANG=`clang -v &> /dev/null && echo "yes"`
+GXX=`g++ -x c -c /dev/null -o /dev/null &>/dev/null && echo "yes"`
+CLANGXX=`clang++ -x c -c /dev/null -o /dev/null &>/dev/null && echo "yes"`
+DPCPP=`dpcpp -x c -c /dev/null -o /dev/null &>/dev/null && echo "yes"`
 
 nc=0
 
@@ -93,6 +103,40 @@ if [ -z "$COMPILER" ]; then
       echo -n "Choose one to use:"
       read
       COMPILER=${COMPILERS[$REPLY]}
+   else
+      echo "No suitable compiler was detected"
+      echo "An empty $OUTPUT will be generated"
+   fi
+fi
+
+if [ -z "$COMPILERXX" ]; then
+   let nc=0
+
+   if [ "$GXX" = "yes" ]; then
+      let nc=nc+1
+      COMPILERSXX[nc]="g++"
+   fi
+
+   if [ "$CLANGXX" = "yes" ]; then
+      let nc=nc+1
+      COMPILERSXX[nc]="clang++"
+   fi
+
+   if [ "$DPCPP" = "yes" ]; then
+      let nc=nc+1
+      COMPILERSXX[nc]="dpcpp"
+   fi
+
+   if [ "$nc" -gt "0" ]; then
+      echo "The following C++ compilers are recognized: "
+      n=1
+      for comp in ${COMPILERSXX[*]}; do
+         echo "  $n. $comp"
+         let n=n+1
+      done
+      echo -n "Choose one to use:"
+      read
+      COMPILERXX=${COMPILERSXX[$REPLY]}
    else
       echo "No suitable compiler was detected"
       echo "An empty $OUTPUT will be generated"
@@ -255,8 +299,34 @@ if [ "$COMPILER" = "clang" -a "$CLANG" = "yes" ]; then
    OMPLINK_FLAGS=$DEBUG
 fi
 
+if [ "$COMPILERXX" = "g++" -a "$GXX" = "yes" ]; then
+   CXX=g++
+   LABEL="$LABEL-g++"
+
+   CXX_FLAGS="-std=c++17 $DEBUG $WARNINGS"
+fi
+
+if [ "$COMPILERXX" = "clang++" -a "$CLANGXX" = "yes" ]; then
+   CXX=clang++
+   LABEL="$LABEL-clang++"
+
+   CXX_FLAGS="-std=c++17 $DEBUG $WARNINGS"
+fi
+
+if [ "$COMPILERXX" = "dpcpp" -a "$DPCPP" = "yes" ]; then
+   CXX=dpcpp
+   LABEL="$LABEL-dpcpp"
+
+   CXX_FLAGS="-std=c++17 $DEBUG $WARNINGS"
+fi
+
 if [ -z "$CC" ]; then
    echo "Wrong compiler configuration"
+   exit 1
+fi
+
+if [ -z "$CXX" ]; then
+   echo "Wrong C++ compiler configuration"
    exit 1
 fi
 
@@ -279,6 +349,7 @@ ENABLE_OMPSS=$ENABLE_OMPSS
 OMPSSC=$OMPSSC
 OMPC=$OMPC
 CC=$CC
+CXX=$CXX
 OMPSSLINK=$OMPSSLINK
 OMPLINK=$OMPLINK
 CLINK=$CLINK
@@ -288,14 +359,15 @@ CLINK=$CLINK
 OPT_FLAGS=$OPT_FLAGS
 
 CC_FLAGS=$CC_FLAGS
+CXX_FLAGS=$CXX_FLAGS
 OMPC_FLAGS=$OMPC_FLAGS
 OMPSSC_FLAGS=$OMPSSC_FLAGS
 OMPC_FINAL_FLAGS=$OMPC_FINAL_FLAGS
 OMPSSC_FINAL_FLAG=$OMPSSC_FINAL_FLAGS
 
-CLINK_FLAGS=$CLINK_FLAGS
-OMPLINK_FLAGS=$OMPLINK_FLAGS
-OMPSSLINK_FLAGS=$OMPSSLINK_FLAGS
+CLINK_FLAGS=$CLINK_FLAGS $L_FLAGS
+OMPLINK_FLAGS=$OMPLINK_FLAGS $L_FLAGS
+OMPSSLINK_FLAGS=$OMPSSLINK_FLAGS $L_FLAGS
 
 EOF
 
