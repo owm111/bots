@@ -47,7 +47,7 @@ SUN=`cc -xopenmp &> /dev/null && echo "yes"`
 CLANG=`clang -v &> /dev/null && echo "yes"`
 GXX=`g++ -x c -c /dev/null -o /dev/null &>/dev/null && echo "yes"`
 CLANGXX=`clang++ -x c -c /dev/null -o /dev/null &>/dev/null && echo "yes"`
-DPCPP=`dpcpp -x c -c /dev/null -o /dev/null &>/dev/null && echo "yes"`
+DPCPP=`dpcpp -fno-sycl -x c -c /dev/null -o /dev/null &>/dev/null && echo "yes"`
 
 nc=0
 
@@ -304,20 +304,23 @@ if [ "$COMPILERXX" = "g++" -a "$GXX" = "yes" ]; then
    LABEL="$LABEL-g++"
 
    CXX_FLAGS="-std=c++17 $DEBUG $WARNINGS"
+   CXX_LIBS="-lstdc++"
 fi
 
 if [ "$COMPILERXX" = "clang++" -a "$CLANGXX" = "yes" ]; then
    CXX=clang++
    LABEL="$LABEL-clang++"
 
-   CXX_FLAGS="-std=c++17 $DEBUG $WARNINGS"
+   CXX_FLAGS="-std=c++17 -fpie $DEBUG $WARNINGS"
+   CXX_LIBS="-lstdc++ -lirc"
 fi
 
 if [ "$COMPILERXX" = "dpcpp" -a "$DPCPP" = "yes" ]; then
    CXX=dpcpp
    LABEL="$LABEL-dpcpp"
 
-   CXX_FLAGS="-std=c++17 $DEBUG $WARNINGS"
+   CXX_FLAGS="-std=c++17 -fpie $DEBUG $WARNINGS"
+   CXX_LIBS="-lstdc++ -lirc"
 fi
 
 if [ -z "$CC" ]; then
@@ -364,6 +367,8 @@ OMPC_FLAGS=$OMPC_FLAGS
 OMPSSC_FLAGS=$OMPSSC_FLAGS
 OMPC_FINAL_FLAGS=$OMPC_FINAL_FLAGS
 OMPSSC_FINAL_FLAG=$OMPSSC_FINAL_FLAGS
+
+CXX_LIBS=$CXX_LIBS
 
 CLINK_FLAGS=$CLINK_FLAGS $L_FLAGS
 OMPLINK_FLAGS=$OMPLINK_FLAGS $L_FLAGS
