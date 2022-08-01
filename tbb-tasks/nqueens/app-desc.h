@@ -31,17 +31,9 @@
 
 int ok(int n, char *a);
 
-#ifndef FORCE_TIED_TASKS
 void nqueens(int n, int j, char *a, std::atomic<int> *solutions, int depth);
-#else
-void nqueens(int n, int j, char *a, int depth);
-#endif
 
-#ifndef FORCE_TIED_TASKS
 void nqueens_ser (int n, int j, char *a, std::atomic<int> *solutions);
-#else
-void nqueens_ser (int n, int j, char *a);
-#endif
 
 void init_queens();
 int verify_queens(int);

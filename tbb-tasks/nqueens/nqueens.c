@@ -57,10 +57,6 @@ static int solutions[] = {
 };
 #define MAX_SOLUTIONS sizeof(solutions)/sizeof(int)
 
-#ifdef FORCE_TIED_TASKS
-thread_local int mycount=0;
-#endif
-
 /* XXX: Using std::atomic instead of omp atomic */
 std::atomic<int> total_count;
 
@@ -85,30 +81,18 @@ int ok(int n, char *a)
      return 1;
 }
 
-#ifndef FORCE_TIED_TASKS
 void nqueens_ser (int n, int j, char *a, std::atomic<int> *solutions)
-#else
-void nqueens_ser (int n, int j, char *a)
-#endif
 {
-#ifndef FORCE_TIED_TASKS
 	std::atomic<int> res;
-#endif
 	int i;
 
 	if (n == j) {
 		/* good solution, count it */
-#ifndef FORCE_TIED_TASKS
 		*solutions = 1;
-#else
-		mycount++;
-#endif
 		return;
 	}
 
-#ifndef FORCE_TIED_TASKS
 	*solutions = 0;
-#endif
 
      	/* try each possible position for queen <j> */
 	for (i = 0; i < n; i++) {
@@ -116,292 +100,97 @@ void nqueens_ser (int n, int j, char *a)
 	  		/* allocate a temporary array and copy <a> into it */
 	  		a[j] = (char) i;
 	  		if (ok(j + 1, a)) {
-#ifndef FORCE_TIED_TASKS
 	       			nqueens_ser(n, j + 1, a,&res);
 				*solutions += res;
-#else
-	       			nqueens_ser(n, j + 1, a);
-#endif
 			}
 		}
 	}
 }
 
-#if defined(IF_CUTOFF)
-#error "WIP"
+#if defined(MANUAL_CUTOFF)
 
-#ifndef FORCE_TIED_TASKS
 void nqueens(int n, int j, char *a, std::atomic<int> *solutions, int depth)
-#else
-void nqueens(int n, int j, char *a, int depth)
-#endif
 {
-#ifndef FORCE_TIED_TASKS
 	std::atomic<int> *csols;
-#endif
 	bots_debug_with_location_info("entered nqueens()");
 	int i;
 
+
 	if (n == j) {
 		/* good solution, count it */
-#ifndef FORCE_TIED_TASKS
 		*solutions = 1;
-#else
-		mycount++;
-#endif
 		return;
 	}
 
 
-#ifndef FORCE_TIED_TASKS
 	*solutions = 0;
 	csols = (std::atomic<int> *)alloca(n*sizeof(int));
 	memset(csols,0,n*sizeof(int));
-#endif
-
-	oneapi::tbb::task_group g;
-     	/* try each possible position for queen <j> */
-	for (i = 0; i < n; i++) {
-		if (depth < bots_cutoff_value) g.run([&] {
-	  		/* allocate a temporary array and copy <a> into it */
-	  		char * b = (char *)alloca(n * sizeof(char));
-	  		memcpy(b, a, j * sizeof(char));
-	  		b[j] = (char) i;
-	  		if (ok(j + 1, b))
-#ifndef FORCE_TIED_TASKS
-	       			nqueens(n, j + 1, b,&csols[i],depth+1);
-#else
-	       			nqueens(n, j + 1, b,depth+1);
-#endif
-		});
-	}
-
-	g.wait();
-#ifndef FORCE_TIED_TASKS
-	for ( i = 0; i < n; i++) *solutions += csols[i];
-#endif
-}
-
-#elif defined(FINAL_CUTOFF)
-#error "WIP"
-
-#ifndef FORCE_TIED_TASKS
-void nqueens(int n, int j, char *a, int *solutions, int depth)
-#else
-void nqueens(int n, int j, char *a, int depth)
-#endif
-{
-#ifndef FORCE_TIED_TASKS
-	std::atomic<int> *csols;
-#endif
-	bots_debug_with_location_info("entered nqueens()");
-	int i;
-
-
-	if (n == j) {
-		/* good solution, count it */
-#ifndef FORCE_TIED_TASKS
-		*solutions += 1;
-#else
-		mycount++;
-#endif
-		return;
-	}
-
-
-#ifndef FORCE_TIED_TASKS
-        char final = omp_in_final();
-        if ( !final ) {
-	  *solutions = 0;
-	  csols = (std::atomic<int> *)alloca(n*sizeof(int));
-	  memset(csols,0,n*sizeof(int));
-        }
-#endif
-
-     	/* try each possible position for queen <j> */
-	for (i = 0; i < n; i++) {
- 		#pragma omp task untied final(depth+1 >= bots_cutoff_value) mergeable
-		{
-                        char *b;
-                        int *sol;
-			if ( omp_in_final() && depth+1 > bots_cutoff_value ) {
-		           b = a;
-#ifndef FORCE_TIED_TASKS
-                           sol = solutions;
-#endif
-                        } else {
-	  		/* allocate a temporary array and copy <a> into it */
-	  		   b = (char *)alloca(n * sizeof(char));
-	  		   memcpy(b, a, j * sizeof(char));
-#ifndef FORCE_TIED_TASKS
-                           sol = &csols[i];
-#endif
-                        } 
-	  		b[j] = i;
-	  		if (ok(j + 1, b))
-#ifndef FORCE_TIED_TASKS
-	       			nqueens(n, j + 1, b,sol,depth+1);
-#else
-	       			nqueens(n, j + 1, b,depth+1);
-#endif
-		}
-	}
-
-	group.wait();
-#ifndef FORCE_TIED_TASKS
-       if ( !final ) {
-	for ( i = 0; i < n; i++) *solutions += csols[i];
-       }
-#endif
-}
-
-#elif defined(MANUAL_CUTOFF)
-
-#ifndef FORCE_TIED_TASKS
-void nqueens(int n, int j, char *a, std::atomic<int> *solutions, int depth)
-#else
-void nqueens(int n, int j, char *a, int depth)
-#endif
-{
-#ifndef FORCE_TIED_TASKS
-	std::atomic<int> *csols;
-#endif
-	bots_debug_with_location_info("entered nqueens()");
-	int i;
-
-
-	if (n == j) {
-		/* good solution, count it */
-#ifndef FORCE_TIED_TASKS
-		*solutions = 1;
-#else
-		mycount++;
-#endif
-		return;
-	}
-
-
-#ifndef FORCE_TIED_TASKS
-	*solutions = 0;
-	csols = (std::atomic<int> *)alloca(n*sizeof(int));
-	memset(csols,0,n*sizeof(int));
-#endif
 
 	oneapi::tbb::task_group g;
      	/* try each possible position for queen <j> */
 	for (i = 0; i < n; i++) {
 		if ( depth < bots_cutoff_value ) {
-#ifndef FORCE_TIED_TASKS
 			g.run([=, &csols] {
-#else
-			g.run([=] {
-#endif
 	  			/* allocate a temporary array and copy <a> into it */
 	  			char * b = (char *)alloca(n * sizeof(char));
 	  			memcpy(b, a, j * sizeof(char));
 	  			b[j] = (char) i;
 	  			if (ok(j + 1, b))
-#ifndef FORCE_TIED_TASKS
 	       				nqueens(n, j + 1, b,&csols[i],depth+1);
-#else
-		       			nqueens(n, j + 1, b,depth+1);
-#endif
 			});
 		} else {
   			a[j] = (char) i;
   			if (ok(j + 1, a))
-#ifndef FORCE_TIED_TASKS
        				nqueens_ser(n, j + 1, a,&csols[i]);
-#else
-	       			nqueens_ser(n, j + 1, a);
-#endif
 		}
 	}
 
 	g.wait();
-#ifndef FORCE_TIED_TASKS
 	for ( i = 0; i < n; i++) *solutions += csols[i];
-#endif
 }
 
 
 #else 
 
-#ifndef FORCE_TIED_TASKS
 void nqueens(int n, int j, char *a, std::atomic<int> *solutions, int depth)
-#else
-void nqueens(int n, int j, char *a, int depth)
-#endif
 {
-#ifndef FORCE_TIED_TASKS
 	bots_debug_with_location_info("entered nqueens(), *solutions = %d\n",
 			solutions->load());
-#else
-	bots_debug_with_location_info("entered nqueens(), mycount = %d\n",
-			mycount);
-#endif
-#ifndef FORCE_TIED_TASKS
 	std::atomic<int> *csols;
-#endif
 	int i;
 
 
 	if (n == j) {
 		/* good solution, count it */
-#ifndef FORCE_TIED_TASKS
 		*solutions = 1;
-#else
-		mycount++;
-#endif
-#ifndef FORCE_TIED_TASKS
 	bots_debug_with_location_info("good solution, count it, *solutions = %d\n",
 			solutions->load());
-#else
-	bots_debug_with_location_info("good solution, count it, mycount = %d\n",
-			mycount);
-#endif
 		return;
 	}
 
 
-#ifndef FORCE_TIED_TASKS
 	*solutions = 0;
 	csols = (std::atomic<int> *)alloca(n*sizeof(int));
 	memset(csols,0,n*sizeof(int));
-#endif
 
 	oneapi::tbb::task_group g;
      	/* try each possible position for queen <j> */
 	for (i = 0; i < n; i++) {
-#ifndef FORCE_TIED_TASKS
 		g.run([=, &csols] {
-#else
-		g.run([=] {
-#endif
 	  		/* allocate a temporary array and copy <a> into it */
 	  		char * b = (char *)alloca(n * sizeof(char));
 	  		memcpy(b, a, j * sizeof(char));
 	  		b[j] = (char) i;
 	  		if (ok(j + 1, b))
-#ifndef FORCE_TIED_TASKS
        				nqueens(n, j + 1, b,&csols[i],depth); //FIXME: depth or depth+1 ???
-#else
-	       			nqueens(n, j + 1, b,depth); //FIXME: see above
-#endif
 		});
 	}
 
 	g.wait();
-#ifndef FORCE_TIED_TASKS
 	for ( i = 0; i < n; i++) *solutions += csols[i];
-#endif
-#ifndef FORCE_TIED_TASKS
 	bots_debug_with_location_info("leaving nqueens, *solutions = %d\n",
 			solutions->load());
-#else
-	bots_debug_with_location_info("leaving nqueens, mycount = %d\n",
-			mycount);
-#endif
 }
 
 #endif
@@ -499,15 +288,8 @@ void find_queens (int size)
 			char *a;
 
 			a = (char *)alloca(size * sizeof(char));
-#ifndef FORCE_TIED_TASKS
 			nqueens(size, 0, a, &total_count,0);
-#else
-			nqueens(size, 0, a, 0);
-#endif
 		}
-#ifdef FORCE_TIED_TASKS
-			total_count += mycount;
-#endif
 	});
 	bots_message(" completed!\n");
 }

@@ -22,7 +22,6 @@ LIBS = -ltbb
 #PROGRAM_OBJS=
 
 CUTOFF_VERSIONS = manual
-TIED_VERSIONS = yes
 
 BASE_DIR = ../../
 
