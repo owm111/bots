@@ -43,10 +43,14 @@ void nqueens_ser (int n, int j, char *a, std::atomic<int> *solutions);
 void nqueens_ser (int n, int j, char *a);
 #endif
 
+void init_queens();
 int verify_queens(int);
 void find_queens (int);
+void cleanup_queens();
 
+#define KERNEL_INIT init_queens()
 #define KERNEL_CALL find_queens(bots_arg_size)
 #define KERNEL_CHECK verify_queens(bots_arg_size)
+#define KERNEL_FINI cleanup_queens()
 
 #define BOTS_CUTOFF_DEF_VALUE 3
