@@ -223,6 +223,8 @@ ifeq ($(VERSION),tbb-tasks)
 
 TARGETS = $(BIN_DIR)/$(PROGRAM).$(LABEL).$(SUB)$(VERSION)
 
+CXX_ALL_FLAGS += -I$(BASE_DIR)/tbb-tasks/common
+
 ifdef CUTOFF_VERSIONS
 	TARGETS += $(CUTOFF_VERSIONS:%=$(BIN_DIR)/$(PROGRAM).$(LABEL).$(SUB)$(VERSION)-%)
 
