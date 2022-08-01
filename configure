@@ -109,7 +109,7 @@ if [ "$COMPILER" = "gcc" -a "$GCC" = "yes" ]; then
    OMPC="$CC -fopenmp"
    OMPLINK="$CC -fopenmp"
    LABEL=gcc
-   [ "$debug" = "yes" ] && DEBUG=$DEBUG -g
+   [ "$debug" = "yes" ] && DEBUG="$DEBUG -g"
    [ "$warnings" = "yes" ] && WARNINGS="$WARNINGS -Wall -Werror"
 
    OPT_FLAGS=-O3
@@ -125,7 +125,7 @@ if [ "$COMPILER" = "clang" -a "$CLANG" = "yes" ]; then
    OMPC="$CC -fopenmp"
    OMPLINK="$CC -fopenmp"
    LABEL=clang
-   [ "$debug" = "yes" ] && DEBUG=$DEBUG -g
+   [ "$debug" = "yes" ] && DEBUG="$DEBUG -g"
    [ "$warnings" = "yes" ] && WARNINGS="$WARNINGS -Wall -Werror"
 
    OPT_FLAGS=-O3
@@ -141,7 +141,7 @@ if [ "$COMPILER" = "icc" -a "$ICC" = "yes" ]; then
    OMPC="$CC -openmp"
    OMPLINK="$CC -openmp"
    LABEL=icc
-   [ "$debug" = "yes" ] && DEBUG=$DEBUG -g
+   [ "$debug" = "yes" ] && DEBUG="$DEBUG -g"
    [ "$warnings" = "yes" ] && WARNINGS="$WARNINGS -Wall -Werror"
 
    OPT_FLAGS=-O2
@@ -163,7 +163,7 @@ if [ "$COMPILER" = "mcc" -a "$MCC" = "yes" ]; then
    OMPC=$CC
    OMPLINK=$CC
    LABEL=mcc
-   [ "$debug" = "yes" ] && DEBUG=$DEBUG -g
+   [ "$debug" = "yes" ] && DEBUG="$DEBUG -g"
    [ "$warnings" = "yes" ] && WARNINGS="$WARNINGS -Wall -Werror"
 
    OPT_FLAGS=-O3
@@ -189,7 +189,7 @@ if [ "$COMPILER" = "xlc" -a "$XLC" = "yes" ]; then
    OMPC="$CC -qsmp=omp"
    OMPLINK=$OMPC
    LABEL=xlc
-   [ "$debug" = "yes" ] && DEBUG=$DEBUG -g
+   [ "$debug" = "yes" ] && DEBUG="$DEBUG -g"
    [ "$warnings" = "yes" ] && WARNINGS="$WARNINGS -qflag=w:w -qhalt=w"
 
    OPT_FLAGS=-O3
@@ -225,7 +225,7 @@ if [ "$COMPILER" = "sunstudio" -a "$SUN" = "yes" ]; then
    OMPC="$CC -xopenmp"
    OMPLINK=$OMPC
    LABEL=suns
-   [ "$debug" = "yes" ] && DEBUG=$DEBUG -g
+   [ "$debug" = "yes" ] && DEBUG="$DEBUG -g"
    if [ "$warnings" = "yes" ]; then
       echo "The sunstudio compiler doesn't support '--warnings' option (skipping it)"
       echo "Press (Enter) to continue..."
@@ -245,7 +245,7 @@ if [ "$COMPILER" = "clang" -a "$CLANG" = "yes" ]; then
    OMPC="$CC -fopenmp"
    OMPLINK="$CC -fopenmp"
    LABEL=clang
-   [ "$debug" = "yes" ] && DEBUG=$DEBUG -g
+   [ "$debug" = "yes" ] && DEBUG="$DEBUG -g"
    [ "$warnings" = "yes" ] && WARNINGS="$WARNINGS -Wall -Werror"
 
    OPT_FLAGS=-O3
