@@ -19,7 +19,7 @@
 ##############################################################################################
 
 LIBS = -ltbb -lstdc++
-#PROGRAM_OBJS=
+PROGRAM_OBJS=nqueens.o ../common/arena.o
 
 CUTOFF_VERSIONS = manual
 
