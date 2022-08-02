@@ -67,6 +67,7 @@
 #include "bots.h"
 #include "app-desc.h"
 #include "arena.h"
+#include <oneapi/tbb.h>
 
 ELM *array, *tmp;
 
