@@ -18,7 +18,7 @@
 /*  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA            */
 /**********************************************************************************************/
 
-#include "omp-tasks-app.h"
+#include "tbb-tasks-app.h"
 
 #define BOTS_APP_NAME "Sort"
 #define BOTS_APP_PARAMETERS_DESC "N=%d:Q=%d:I=%d:M=%d"
@@ -40,27 +40,22 @@
 #define BOTS_APP_DEF_ARG_CUTOFF_2 (20)
 #define BOTS_APP_DESC_ARG_CUTOFF_2 "Sequential Insertion cutoff value"
 
-typedef long ELM;
-
-void seqquick(ELM *low, ELM *high); 
-void seqmerge(ELM *low1, ELM *high1, ELM *low2, ELM *high2, ELM *lowdest);
-ELM *binsplit(ELM val, ELM *low, ELM *high); 
-void cilkmerge(ELM *low1, ELM *high1, ELM *low2, ELM *high2, ELM *lowdest);
-void cilkmerge_par(ELM *low1, ELM *high1, ELM *low2, ELM *high2, ELM *lowdest);
-void cilksort(ELM *low, ELM *tmp, long size);
-void cilksort_par(ELM *low, ELM *tmp, long size);
-void scramble_array( ELM *array ); 
-void fill_array( ELM *array ); 
-void sort ( void ); 
+/* sort.cpp only needs the macros above; sort.h provides C++ prototypes for
+ * these functions.
+ */
+#ifndef __cplusplus
 
 void sort_par (void);
 void sort_init (void);
 int sort_verify (void);
+void par_init();
+void par_fini();
+
+#endif /* __cplusplus */
 
 #define BOTS_APP_INIT sort_init()
 
-#define KERNEL_INIT
+#define KERNEL_INIT par_init()
 #define KERNEL_CALL sort_par()
 #define KERNEL_CHECK sort_verify()
-
-
+#define KERNEL_FINI par_fini()

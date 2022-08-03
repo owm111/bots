@@ -61,13 +61,15 @@
  * log factor in the critical path (left as homework).
  */
 
+#include <oneapi/tbb.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "bots.h"
-#include "app-desc.h"
+#include "sort.h"
 #include "arena.h"
-#include <oneapi/tbb.h>
+/* For #define constants */
+#include "app-desc.h"
 
 ELM *array, *tmp;
 
@@ -418,7 +420,7 @@ void fill_array( ELM *array )
      }
 }
 
-void sort_init ( void )
+extern "C" void sort_init ( void )
 {
      /* Checking arguments */
      if (bots_arg_size < 4) {
@@ -459,7 +461,7 @@ void sort_init ( void )
      scramble_array(array);
 }
 
-void sort_par ( void )
+extern "C" void sort_par ( void )
 {
 	bots_message("Computing multisort algorithm (n=%d) ", bots_arg_size);
     arenaptr->execute([=] {
@@ -468,7 +470,7 @@ void sort_par ( void )
 	bots_message(" completed!\n");
 }
 
-int sort_verify ( void )
+extern "C" int sort_verify ( void )
 {
      int i, success = 1;
      for (i = 0; i < bots_arg_size; ++i)
@@ -478,3 +480,12 @@ int sort_verify ( void )
      return success ? BOTS_RESULT_SUCCESSFUL : BOTS_RESULT_UNSUCCESSFUL;
 }
 
+extern "C" void par_init()
+{
+	init_arenaptr();
+}
+
+extern "C" void par_fini()
+{
+	fini_arenaptr();
+}

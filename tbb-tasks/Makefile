@@ -19,7 +19,7 @@
 ##############################################################################################
 
 #DIRS=fib alignment nqueens sort strassen sparselu fft floorplan health uts
-DIRS=fft fib health nqueens strassen
+DIRS=fft fib health nqueens sort strassen
 
 RECURSIVE=all-recursive clean-recursive dist-clean-recursive
 
